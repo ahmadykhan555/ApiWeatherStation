@@ -2,31 +2,37 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const router = require('./routes/router');
-const jwt = require('jsonwebtoken');
-const config = require('./config');
-const user = require('./handlers/user');
+const config = require('./config'); 
 
-app.use(bodyParser.urlencoded());
-app.use((req, res, next) => {
-    try {
-        jwt.verify(token, config.jwtKey, (err, payload) => {
-            if(err) {
-                next();
-                return;
-            }
-            user.findById(payload.userId).then((doc) => {
-                req.user = doc;
-                next();
-            });
-        });
-    } catch (e) {
-        console.error(e);
-        next();
+// middlewares.
+const verifyToken = (req, res, next) => {
+    /**
+     * Token format
+     * bearer <access_token>
+     */
+    const jwt = require('jsonwebtoken');
+    console.log(req.headers);
+    const bearer = req.headers['authorization'];
+    if(!bearer) {
+        res.sendStatus(403);
+        return;
     }
-    const token = req.headers.authorization.split(' ')[1];
-})
+    const token = bearer.split(' ')[1];
+    jwt.verify(token, config.jwtKey, (err, authData) => {
+        if(err) {
+            res.sendStatus(403);
+            return;
+        }
+        req.authData = authData;
+        next();
+    });
+}
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded());
+app.use('/api/*', verifyToken)
 app.use(router);
 
 app.listen(4200, () => {
     console.log('Running on 4200')
-})
+});
