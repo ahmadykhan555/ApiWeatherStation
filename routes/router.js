@@ -8,20 +8,30 @@ router.get('/', (req, res) => {
 });
 
 router.post('/login', (req, res) => {
-    const payload = {username: req.body.username, password: req.body.password};
-    jwt.sign({user: payload}, config.jwtKey, (err, token) => {
-        res.json(token);
-    })
-    res.json({
-        msg: 'login',
+    const { username, password } = req.body;
+    const payload = {
         username,
         password
-    });
+    };
+    jwt.sign( {user: payload} , config.jwtKey, (err, token) => {
+        if(err) {
+            console.log('====================================');
+            console.log('Sending Error');
+            console.log('====================================');
+            res.statusCode(403);
+            return;
+        }
+        res.json({
+            username,
+            password,
+            token
+        });
+    })
 })
 
 router.post('/api/user/posts', (req, res) => {
     const {username, id} = req.body;
-    res.send({
+    res.json({
         name: username,
         id: id,
         authData: req.authData

@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const router = require('./routes/router');
-const config = require('./config'); 
+const config = require('./config');
 
 // middlewares.
 const verifyToken = (req, res, next) => {
@@ -10,6 +10,9 @@ const verifyToken = (req, res, next) => {
      * Token format
      * bearer <access_token>
      */
+    console.log('====================================');
+    console.log('Verifying token');
+    console.log('====================================');
     const jwt = require('jsonwebtoken');
     console.log(req.headers);
     const bearer = req.headers['authorization'];
